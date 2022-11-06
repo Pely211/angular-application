@@ -1,23 +1,21 @@
 <h2>My Books</h2>
+
 <div>
-    <label>Book name:</label> <input #bookName/>
-    <button (click)="add(bookName.value); bookName.value=''">
-        Add
-    </button>
+  <label for="new-book">Book name: </label>
+  <input id="new-book" #bookName />
+
+  <!-- (click) passes input value to add() and then clears the input -->
+  <button type="button" class="add-button" (click)="add(bookName.value); bookName.value=''">
+    Add book
+  </button>
 </div>
+
 <ul class="books">
-    <li *ngFor="let book of books" (click)="onSelect(book)"
-        [class.selected]="book === selectedBook">
-        <span class="badge">{{book.id}}</span>
-        <span>{{book.name}}</span>
-        <button class="delete"
-                (click)="delete(book); $event.stopPropagation()">x
-        </button>
-    </li>
+  <li *ngFor="let book of books">
+    <a routerLink="/detail/{{book.id}}">
+      <span class="badge">{{book.id}}</span> {{book.name}}
+    </a>
+    <button type="button" class="delete" title="delete book"
+      (click)="delete(book)">x</button>
+  </li>
 </ul>
-<div *ngIf="selectedBook">
-    <h2>
-        {{selectedBook.name | uppercase}} is my book
-    </h2>
-    <button (click)="gotoDetail()">View Details</button>
-</div>

@@ -1,60 +1,40 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 
-import { Book } from './book';
-import { BookService } from './book.service';
+import { Book } from '../book';
+import { BookService } from '../book.service';
 
 @Component({
-  selector: 'my-books',
+  selector: 'app-books',
   templateUrl: './books.component.html',
   styleUrls: ['./books.component.css']
 })
 export class BooksComponent implements OnInit {
-  books: Book[];
-  selectedBook: Book;
+  books: Book[] = [];
 
-  constructor(private bookService: BookService,
-              private router: Router) {
-  }
-
-  getBooks(): void {
-    this.bookService
-        .getBooks()
-        .then(books => this.books = books);
-  }
-
-  add(name: string): void {
-    name = name.trim();
-    if (!name) {
-      return;
-    }
-    this.bookService.create(name)
-        .then(book => {
-          this.books.push(book);
-          this.selectedBook = null;
-        });
-  }
-
-  delete(book: Book): void {
-    this.bookService
-        .delete(book.id)
-        .then(() => {
-          this.books = this.books.filter(h => h !== book);
-          if (this.selectedBook === book) {
-            this.selectedBook = null;
-          }
-        });
-  }
+  constructor(private bookService: BookService) { }
 
   ngOnInit(): void {
     this.getBooks();
   }
 
-  onSelect(book: Book): void {
-    this.selectedBook = book;
+  getBooks(): void {
+    this.bookService.getBooks()
+    .subscribe(books => this.books = books);
   }
 
-  gotoDetail(): void {
-    this.router.navigate(['/detail', this.selectedBook.id]);
+  add(name: string): void {
+    name = name.trim();
+    if (!name) { return; }
+    this.bookService.addBook({ name } as Book)
+      .subscribe(book => {
+        this.books.push(book);
+      });
   }
+
+  delete(book: Book): void {
+    this.books = this.books.filter(h => h !== book);
+    const id_of_book: number = book.id!;
+    this.bookService.deleteBook(id_of_book).subscribe();
+  }
+
 }

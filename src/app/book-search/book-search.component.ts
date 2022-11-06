@@ -1,33 +1,24 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 
-import { Observable } from 'rxjs/Observable';
-import { Subject } from 'rxjs/Subject';
+import { Observable, Subject } from 'rxjs';
 
-// Observable class extensions
-import 'rxjs/add/observable/of';
+import {
+   debounceTime, distinctUntilChanged, switchMap
+ } from 'rxjs/operators';
 
-// Observable operators
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/operator/debounceTime';
-import 'rxjs/add/operator/distinctUntilChanged';
-
-import { BookSearchService } from './book-search.service';
-import { Book } from './book';
+import { Book } from '../book';
+import { BookService } from '../book.service';
 
 @Component({
-  selector: 'book-search',
+  selector: 'app-book-search',
   templateUrl: './book-search.component.html',
-  styleUrls: ['./book-search.component.css'],
-  providers: [BookSearchService]
+  styleUrls: [ './book-search.component.css' ]
 })
 export class BookSearchComponent implements OnInit {
-  books: Observable<Book[]>;
+  books$!: Observable<Book[]>;
   private searchTerms = new Subject<string>();
 
-  constructor(private bookSearchService: BookSearchService,
-              private router: Router) {
-  }
+  constructor(private bookService: BookService) {}
 
   // Push a search term into the observable stream.
   search(term: string): void {
@@ -35,23 +26,15 @@ export class BookSearchComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.books = this.searchTerms
-        .debounceTime(300)        // wait 300ms after each keystroke before considering the term
-        .distinctUntilChanged()   // ignore if next search term is same as previous
-        .switchMap(term => term   // switch to new observable each time the term changes
-            // return the http search observable
-            ? this.bookSearchService.search(term)
-            // or the observable of empty books if there was no search term
-            : Observable.of<Book[]>([]))
-        .catch(error => {
-          // TODO: add real error handling
-          console.log(error);
-          return Observable.of<Book[]>([]);
-        });
-  }
+    this.books$ = this.searchTerms.pipe(
+      // wait 300ms after each keystroke before considering the term
+      debounceTime(300),
 
-  gotoDetail(book: Book): void {
-    let link = ['/detail', book.id];
-    this.router.navigate(link);
+      // ignore new term if same as previous term
+      distinctUntilChanged(),
+
+      // switch to new search observable each time the term changes
+      switchMap((term: string) => this.bookService.searchBooks(term)),
+    );
   }
 }

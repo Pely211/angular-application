@@ -1,9 +1,9 @@
-<h3>Top Books</h3>
-<div class="grid grid-pad">
-    <a *ngFor="let book of books" [routerLink]="['/detail', book.id]" class="col-1-4">
-        <div class="module book">
-            <h4>{{book.name}}</h4>
-        </div>
-    </a>
+<h2>Top Books</h2>
+<div class="books-menu">
+  <a *ngFor="let book of books"
+      routerLink="/detail/{{book.id}}">
+      {{book.name}}
+  </a>
 </div>
-<book-search></book-search>
+
+<app-book-search></app-book-search>

@@ -1,38 +1,42 @@
-import 'rxjs/add/operator/switchMap';
-import { Component, OnInit }        from '@angular/core';
-import { ActivatedRoute, ParamMap } from '@angular/router';
-import { Location }                 from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
 
-import { Book }        from './book';
-import { BookService } from './book.service';
+import { Book } from '../book';
+import { BookService } from '../book.service';
 
 @Component({
-  selector: 'book-detail',
+  selector: 'app-book-detail',
   templateUrl: './book-detail.component.html',
   styleUrls: [ './book-detail.component.css' ]
 })
 export class BookDetailComponent implements OnInit {
-  book: Book;
+  book: Book | undefined;
 
   constructor(
-    private bookService: BookService,
     private route: ActivatedRoute,
+    private bookService: BookService,
     private location: Location
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap
-      .switchMap((params: ParamMap) => this.bookService.getBook(+params.get('id')))
-      .subscribe(book => this.book = book);
+    this.getBook();
   }
 
-  save(): void {
-    this.bookService.update(this.book)
-      .then(() => this.goBack());
+  getBook(): void {
+    const id = parseInt(this.route.snapshot.paramMap.get('id')!, 10);
+    this.bookService.getBook(id)
+      .subscribe(book => this.book = book);
   }
 
   goBack(): void {
     this.location.back();
   }
-}
 
+  save(): void {
+    if (this.book) {
+      this.bookService.updateBook(this.book)
+        .subscribe(() => this.goBack());
+    }
+  }
+}
